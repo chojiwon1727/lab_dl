@@ -1,4 +1,5 @@
 # ch03. 신경망
+## ex01
 ### 활성화 함수(activation function)
 ### : 신경망의 뉴런(neuron)에서 입력 신호의 가중치 합을 출력값으로 변환해주는 함수
 #### ※ perceptron 
@@ -117,6 +118,7 @@ relu = relu(x_points)
 ![Figure_2](https://user-images.githubusercontent.com/56914237/72419963-31169200-37c1-11ea-88b0-ef1884571110.png)
 
 ***********************************************************
+## ex02
 ### 행렬의 내적(dot product)
 ```python
 import numpy as np
@@ -139,6 +141,7 @@ print(B.dot(A))
 ###### -> W.dot(x)하면 원래 dot product를 할 수 없는데 numpy가 자동으로 x(1x2)를 2x1로 변형 계산
 
 ***********************************************************
+## ex03
 ### 행렬을 이용한 신경망
 
 #### 신경망1 -> 포스트잇 그림 1 추가하기(책82p 그림 3-14)
@@ -166,6 +169,8 @@ print(y)
 ```
 ###### [10 13 16]
 
+***********************************************************
+## ex04
 #### 신경망2 -> 포스트잇 그림 2 추가하기 
 ##### 그림 2-1
 ##### 1) 첫번째 은닉층 a_1 계산해서 은닉층 a_1의 a값들의 리스트 출력
@@ -215,6 +220,7 @@ print('y :', y)
 #### (방법 : 오차역전파, 경사하강법 등)
 
 ***********************************************************
+## ex05
 ### 신경망 모델 코드로 구현하기
 ![캡처2](https://user-images.githubusercontent.com/56914237/72421871-a899f080-37c4-11ea-9e7e-f3fddf4a1f79.PNG)
 
@@ -325,18 +331,19 @@ if __name__ == '__main__':
 ###### softmax = [0.26894142 0.73105858]
 
 ***********************************************************
-### MNIST database
+## ex06
+### ※ MNIST database
 http://yann.lecun.com/exdb/mnist/
 
 #### load_mnist()
-###### 파라미터 1) normalize 
+###### ●  파라미터 1) normalize 
 ###### -> normalize = True인 경우, 실제 배열의 값을 0 ~ 1 사이의 값으로 만들어줌
 
-##### 파라미터 2) flatten 
+##### ●  파라미터 2) flatten 
 ###### -> flatten = False인 경우, 이미지 구성(n, c, h, w)형식으로 표시함
 ###### -> ex, (60000, 1, 28, 28) : 60_000개의 이미지가 모두 한 장(흑백=1, 컬러=3, 컬러+투명도=4)의 28x28로 구성
 
-##### 파라미터 3) one_hot_label 
+##### ●  파라미터 3) one_hot_label 
 ###### -> one_hot_label = True인 경우, one_hot_encoding 형식으로 숫자 레이블 출력
 ###### -> one_hot_encoding : 해당 자릿수만 1, 나머지 0 표시
 ###### -> ex, 5 = [0 0 0 0 0 1 0 0 0 0]
@@ -373,6 +380,40 @@ if __name__ == '__main__':
     print(img)
 ```
 
+***********************************************************
+## ex07
+### ※ pickle 데이터 타입
+#### - Serialize(직렬화, pickling), Deserialize(역직렬화, unpickiling)을 도와주는 데이터 타입
+##### ●  Serialize : 객체(list, dict 등) 타입 -> 파일 저장
+```python
+import pickle
 
+arr = [1, 100, 'A', 3.141592]   # list 객체 타입
+with open('array.pickle', mode='wb') as f:     # W: write, b: binary   -> 2진수를 저장하겠다는 의미
+    pickle.dump(arr, f)    # 객체(obj)를 파일(f)에 저장
+```
+##### ●  Deserialize : 파일 -> 객체(list, dict 등) 타입
+```python
+with open('array.pickle', mode='rb') as f:
+    data = pickle.load(f)
+print(data)
+```
 
+##### ●  연습
+```python
+data ={
+    'name': '오쌤',
+    'age': 16,
+    'k1': [1, 2.0, 'AB'],
+    'k2': {'tel': '010-0000-0000', 'email': 'jake@test.com'}}
+
+# data객체를 data.pkl 파일에 저장(serialization)
+with open('data.pkl', mode='wb') as f:
+    pickle.dump(data, f)
+
+# data.pkl 파일을 읽어서 dict 객체를 복원(deserialization)
+with open('data.pkl', mode='rb') as f:
+    data_pkl = pickle.load(f)
+print(data_pkl)
+```
 
