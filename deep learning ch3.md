@@ -417,3 +417,119 @@ with open('data.pkl', mode='rb') as f:
 print(data_pkl)
 ```
 
+***********************************************************
+## ex08
+### ※ MNISt 숫자 손글씨 데이터 신경망 구현
+#### 1) 가중치, 편향 행렬 생성
+```python
+import pickle
+from ch03.ex01 import sigmoid
+from ch03.ex05 import softmax
+from dataset.mnist import load_mnist
+import numpy as np
+
+
+def init_network():
+    """ 가중치, bias행렬들을 생성 """
+    with open('sample_weight.pkl', 'rb') as f: # 교재의 저자가 만든 가중치 행렬을 읽어옴
+        network = pickle.load(f)
+    # W1, W2, W3, b1, b2, b3 shape 확인
+    return network
+```
+
+#### 2) 가중치, 편향을 전달받아서 테스트 데이터의 예측값 예측
+```python
+def predict(network, X_test):
+    """
+    신경망에서 사용되는 가중치행렬과 테스트 데이터를 전달받아서
+    테스트 데이터의 예측값(배열)을 리턴
+    """
+    W1, W2, W3 = network['W1'], network['W2'], network['W3']
+    b1, b2, b3 = network['b1'], network['b2'], network['b3']
+
+    a1 = X_test.dot(W1) + b1
+    z1 = sigmoid(a1)
+
+    a2 = z1.dot(W2) + b2
+    z2 = sigmoid(a2)
+
+    pred = z2.dot(W3) + b3
+    return softmax(pred)
+```
+
+#### 3) 테스트 데이터의 레이블과 테스트 데이터의 예측값을 통해 정확도 계산
+```python
+def accuracy(y_test, pred):
+    """
+    테스트 데이터레이블과 테스트 데이터 예측값을 전달받아서
+    정확도(accuracy)= (정답/전체) 를 리턴
+    """
+    acc = []
+    for i in range(len(y_test)):
+        for j in range(len(y_test[i])):
+            if y_test[i][j] == 1:
+                a, b = i, j
+                if pred[i][j] == np.max(pred[i]):
+                    c, d = i, j
+                    if a == c and b == d:
+                        acc.append(a)
+        return len(acc) / len(y_test)
+```
+
+```python
+if __name__ == '__main__':
+    network = init_network()
+
+    (X_train, y_train), (X_test, y_test) = load_mnist(normalize=True, flatten=True, one_hot_label=True)
+
+    pred = predict(network, X_test)
+    print('max:',np.max(pred[0]))
+    print('y_test[0]:', y_test[0])
+
+    acc = accuracy(y_test, pred)
+    print('acc:', acc)
+```
+###### [2.6744647e-08 8.3487522e-10 2.2669194e-07 3.9877449e-07 3.7157974e-10 1.4254578e-08 5.1546488e-12 3.1590319e-04 2.9701399e-09 2.5926784e-07]
+###### max: 0.0003159032
+###### y_test[0]: [0. 0. 0. 0. 0. 0. 0. 1. 0. 0.]
+###### acc: 0.0001
+
+***********************************************************
+## ex09
+### ※ PIL 패키지와 numpy 패키지를 이용하여 이미지 파일의 픽셀 정보를 numpy.ndarray형식으로 변환하거나 numpy.ndarray 형식의 이미지 픽셀 정보를 이미지 파일로 저장
+```python
+import numpy as np
+from PIL import Image
+
+def image_to_pixel(image_file):
+    """이미지 파일 이름(경로)를 파라미터로 전달받아서,
+    numpy.ndarray에 픽셀 정보를 저장해서 리턴."""
+    img = Image.open(image_file, mode='r')    # 이미지 파일 오픈
+    print('type: ',type(img))
+    pixels = np.array(img)    # 이미지 파일 객체를 numpy.ndarray 형식으로 변환
+    print('pixels shape: ', pixels.shape)
+
+    return pixels
+```
+
+```python
+def pixel_to_image(pixel, image_file):
+    """numpy.ndarray 형식의 이미지 픽셀 정보와, 저장할 파일 이름을 파라미터로
+    전달받아서, 이미지 파일을 저장"""
+    img = Image.fromarray(pixel)   # ndarray 타입의 데이터를 이미지로 변환
+    print('type: ',type(img))
+    img.show()      # 이미지 뷰어를 사용해서 이미지 보기
+    img.save(image_file)   # 이미지 객체를 파일로 저장
+
+```
+
+```python
+if __name__ == '__main__':
+    # image_to_pixel(), pixel_to_image() 함수 테스트
+    pixels1 = image_to_pixel('크리스마스.jpg')    # shape: (497, 860, 3)  -> (세로 길이, 가로 길이, color)
+    pixels2 = image_to_pixel('크리스마스트리.png')  # shape: (1208, 860, 3)
+
+    pixel_to_image(pixels1, 'test.jpg')
+    pixel_to_image(pixels2, 'test2.png')
+```
+
