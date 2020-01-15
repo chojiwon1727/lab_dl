@@ -216,5 +216,163 @@ print('y :', y)
 
 ***********************************************************
 ### 신경망 모델 코드로 구현하기
+![캡처2](https://user-images.githubusercontent.com/56914237/72421871-a899f080-37c4-11ea-9e7e-f3fddf4a1f79.PNG)
+
+#### 신경망에서 사용되는 가중치(W)행렬과 편향(b)행렬 생성
+```python 
+import numpy as np
+from ch03.ex01 import sigmoid
+
+
+def init_network():
+    """
+    신경망(neural network)에서 사용되는 가중치(W) 행렬과 bias 행렬 생성
+    입력값 : (x1, x2) -> 1x2 행렬
+    은닉층 : 2개
+            --> 1st 은닉층 : 뉴런 3개  (x @ w1 + b1)
+            --> 2nd 은닉층 : 뉴런 2개 (z @ w2 + b2)
+    출력층 : (y1, y2) -> 1x2 행렬
+    w1, w2, w3, b1, b2, b3를 난수로 생성
+    """
+    np.random.seed(1224)
+    network = dict()       # 가중치 / bias 행렬을 저장하기 위한 dict(key : w1, value: 난수) -> 최종 리턴값
+
+    # 은닉층 1 : x @ w1 + b1
+    # (1 x 2) @ (2 x 3) + (1 x 3)  =  (1 x 3)
+    network['W1'] = np.random.random(size=(2,3)).round(2)     # -> size를 주면 0~1사이의 값을 size에 맞게 리턴
+    network['b1'] = np.random.random(size=3).round(2)
+
+    # 은닉층 2 : z1 @ w2 + b2
+    # (1 x 3) @ (3 x 1) + (1 x 2)  =  (1 x 2)
+    network['W2'] = np.random.random(size=(3, 2)).round(2)
+    network['b2'] = np.random.random(size=2).round(2)
+
+    # 출력층 : z2 @ W3 + b3
+    # (1 x 2) @ (2 x 2) + (1 x 2)  =  (1 x 2)
+    network['W3'] = np.random.random(size=(2, 2)).round(2)
+    network['b3'] = np.random.random(size=2).round(2)
+
+    return network
+```
+
+#### 신경망에서 입력층 -> 은닉층 -> 출력층을 거치는 순방향 전파
+```python
+def forward(network, x):
+    """
+    순방향 전파(forward propagation) : 입력층 -> 은닉층 -> 출력층
+
+    은닉층의 활성화 함수 : 시그모이드 함수
+
+    :param network: 신경망에서 사용되는 가중치와 bias 행렬들을 저장한 dict
+    :param x: 입력값을 가지고 있는 1차원 리스트  -> ex, [x1, x2]
+    :return: 2개의 은닉층과 1개의 출력층을 거친 후 계산된 최종 출력값 -> ex, [y1, y2]
+    """
+    W1, W2, W3 = network['W1'], network['W2'], network['W3']
+    b1, b2, b3 = network['b1'], network['b2'], network['b3']
+
+    a1 = x.dot(W1)+b1
+    z1 = sigmoid(a1)
+
+    z2 = sigmoid(z1.dot(W2)+b2)
+
+    y = z2.dot(W3)+b3
+    return softmax(y)
+```
+
+#### 출력층의 활성화 함수 1) 항등함수 : 회귀문제
+```python
+def identity_function(x):
+    return x
+```
+
+#### 출력층의 활성화 함수 2) softmax : 분류문제
+##### -> softmax의 문제점 : 지수승을 사용하기 때문에 x의 값이 커지면 급격히 증가(overfitting)
+##### -> 따라서, softmax 공식에서 분자 분모에서 exp안에 똑같은 값을 더하거나 빼면 제대로된 결과를 얻을 수 있음
+
+```python
+def softmax(x):
+    """
+    x = [x1, x2, x3, ..., x_k, ..., x_n]
+    배열 x의 k번째 값의 softmax y_k = exp(x_k) / [sum k to n exp(x_k)] = exp(x_k) / sum(exp(x_k))
+    --> 의미 : 배열 x에서 k가 차지하는 비율(확률) --> 0과 1사이의 값
+    :param x: array
+    :return: 0 ~ 1사이의 값(모든 리턴값의 총 합 : 1)
+    """
+    max_x = np.max(x)  # array x의 원소들 중 최대값을 찾음
+    y = np.exp(x - max_x) / np.sum(np.exp(x - max_x))
+    return y
+```
+
+```python
+if __name__ == '__main__':
+    network = init_network()
+
+    x = np.array([1,2])
+    y = forward(network, x)
+    print('y :', y)
+
+    # print('x =', x)
+    # print('softmax =', softmax(x))
+    #
+    # x = [1,2,3]
+    # print('softmax =', softmax(x))
+    #
+    # x = [1e0, 1e1, 1e2, 1e3]   # [1, 10, 100, 1000]
+    # print('x =', x)
+    print('softmax =', softmax(x))
+```
+###### y : [0.39250082 0.60749918]
+###### softmax = [0.26894142 0.73105858]
+
+***********************************************************
+### MNIST database
+http://yann.lecun.com/exdb/mnist/
+
+#### load_mnist()
+###### 파라미터 1) normalize 
+###### -> normalize = True인 경우, 실제 배열의 값을 0 ~ 1 사이의 값으로 만들어줌
+
+##### 파라미터 2) flatten 
+###### -> flatten = False인 경우, 이미지 구성(n, c, h, w)형식으로 표시함
+###### -> ex, (60000, 1, 28, 28) : 60_000개의 이미지가 모두 한 장(흑백=1, 컬러=3, 컬러+투명도=4)의 28x28로 구성
+
+##### 파라미터 3) one_hot_label 
+###### -> one_hot_label = True인 경우, one_hot_encoding 형식으로 숫자 레이블 출력
+###### -> one_hot_encoding : 해당 자릿수만 1, 나머지 0 표시
+###### -> ex, 5 = [0 0 0 0 0 1 0 0 0 0]
+
+##### 신경망에 넣을 때 normalize=True, flatten=True가 좋음(but, 이미지 한 장을 보기에는 flatten=False가 좋음)
+```python
+from PIL import Image
+import numpy as np
+from dataset.mnist import load_mnist
+
+if __name__ == '__main__':
+    (X_train, y_train), (X_test, y_test) = load_mnist(normalize=False)
+    # (학습 이미지 데이터, 학습 데이터 레이블), (테스트 이미지 데이터, 테스트 데이터 레이블)
+
+    print('X_train shape:', X_train.shape)
+    print('y_train shape:', y_train.shape)
+
+    # 학습 세트의 첫번째 이미지
+    img = X_train[0]
+    img = img.reshape((28,28))    # 1차원 배열을 28x28 형태의 2차원 배열로 변환
+    print(img)
+    img_show(img)   # 2차원 numpy 배열을 이미지로 출력
+    print('label:', y_train[0])
+```
+
+```python
+if __name__ == '__main__':
+    (X_train, y_train), (X_test, y_test) = load_mnist(normalize=True, flatten=False, one_hot_label=True)
+
+    print('X_train shape:', X_train.shape)
+    print('y_train shape:', y_train.shape)
+    print('y_train[0] :', y_train[0])
+    img = X_train[0]
+    print(img)
+```
+
+
 
 
