@@ -114,4 +114,4 @@ relu = relu(x_points)
     plt.legend()
     plt.show()
 ```
-이미지
+![Figure_2](https://user-images.githubusercontent.com/56914237/72419963-31169200-37c1-11ea-88b0-ef1884571110.png)
