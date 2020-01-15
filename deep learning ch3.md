@@ -83,7 +83,7 @@ print('sigmoid : ', sigmoid(x))
     plt.show()
 ```
 ###### 
-이미지
+![Figure_1](https://user-images.githubusercontent.com/56914237/72419218-b4cf7f00-37bf-11ea-88a1-ff81d85c7b73.png)
 
 #### 활성화함수 3) ReLU함수
 ```python
